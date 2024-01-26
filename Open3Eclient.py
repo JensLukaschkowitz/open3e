@@ -214,9 +214,15 @@ def listen(readdids=None, timestep=0):
 def readbydid(addr:int, did:int, json=None, raw=None, msglvl=0):
     if(raw == None): 
         raw = args.raw
+    if (args.performance):
+        start_time = time.time()
     value,idstr =  dicEcus[addr].readByDid(did, raw)
+    if (args.performance):
+        readbydid_time = time.time()
     showread(addr, did, value, idstr, json, msglvl)    
-
+    if (args.performance):
+        end_time = time.time()
+        print(f"[readbydid]: total time {end_time - start_time} • readbydid time {readbydid_time - start_time}")
     
 def readpure(addr:int, did:int, json=None, msglvl=0):
     value,idstr =  dicEcus[addr].readPure(did)
