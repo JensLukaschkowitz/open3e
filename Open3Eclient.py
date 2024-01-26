@@ -290,6 +290,7 @@ parser.add_argument("-m", "--mqtt", type=str, help="publish to server, e.g. 192.
 parser.add_argument("-mfstr", "--mqttformatstring", type=str, help="mqtt formatstring e.g. {didNumber}_{didName}")
 parser.add_argument("-muser", "--mqttuser", type=str, help="mqtt username:password")
 parser.add_argument("-j", "--json", action='store_true', help="send JSON structure")
+parser.add_argument("-p", "--performance", action='store_true', help="measure time")
 parser.add_argument("-v", "--verbose", action='store_true', help="verbose info")
 args = parser.parse_args()
 
@@ -356,17 +357,21 @@ try:
         mlvl = 0  # only val 
         if(len(jobs) > 1): mlvl |= 1  # show did nr
         while(True):
-            start_time = time.time()
+            if(args.performance):
+                start_time = time.time()
 
             for ecudid in jobs:
                 ensure_ecu(ecudid[0])
                 if(len(dicEcus) > 1): mlvl |= 4  # show ecu addr
+                if(args.performance):
+                    readbydid_time = time.time()
                 readbydid(addr=ecudid[0], did=ecudid[1], raw=args.raw, msglvl=mlvl)
 #                 time.sleep(0.02)
-                end_time = time.time()
-                step_time = end_time - start_time
-                start_time = end_time # reset the start_time for the next loop iteration
-                print(f"Time of {ecudid}: {step_time} seconds")
+                if(args.performance):
+                    end_time = time.time()
+                    step_time = end_time - start_time
+                    start_time = end_time # reset the start_time for the next loop iteration
+                    print(f"Total time of {ecudid}: {step_time} seconds; readbydid time {end_time - readbydid_time} seconds")
             if(args.timestep != None):
                 time.sleep(float(eval(args.timestep)))
             else:
