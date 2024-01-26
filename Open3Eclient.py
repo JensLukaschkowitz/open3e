@@ -32,15 +32,10 @@ cmnd_queue = []   # command queue to serialize bus traffic
 
 # utils ~~~~~~~~~~~~~~~~~~~~~~~
 def getint(v) -> int:
-    if type(v) is int:
-        return v
-    else:
-        return int(eval(str(v)))
+       return v if type(v) is int else int(eval(str(v)))
 
 def addr_of_dev(v) -> int: 
-    if(v in dicDevAddrs):
-        return dicDevAddrs[v]
-    return v
+    return dicDevAddrs[v] if v in dicDevAddrs else v
 
 def dev_of_addr(addr:int):
     for key, val in dicDevAddrs.items():
@@ -105,6 +100,10 @@ def ensure_ecu(addr:int):
         ecu = Open3Eclass.O3Eclass(ecutx=addr, doip=args.doip, can=args.can, dev=None) 
         dicEcus[addr] = ecu
 
+def ensure_ecu_or_getaddr(cd):
+    addr = getaddr(cd) if 'addr' in cd else deftx
+    ensure_ecu(addr)
+    return addr
 
 # listen events ~~~~~~~~~~~~~~~~~~~~~~~
 def on_connect(client, userdata, flags, rc):
@@ -355,11 +354,16 @@ try:
         mlvl = 0  # only val 
         if(len(jobs) > 1): mlvl |= 1  # show did nr
         while(True):
+            start_time = time.time()
+
             for ecudid in jobs:
                 ensure_ecu(ecudid[0])
                 if(len(dicEcus) > 1): mlvl |= 4  # show ecu addr
                 readbydid(addr=ecudid[0], did=ecudid[1], raw=args.raw, msglvl=mlvl)
-                time.sleep(0.02)
+#                 time.sleep(0.02)
+                end_time = time.time()
+                step_time = end_time - start_time
+                print("Time of {ecudid}: {step_time} seconds")
             if(args.timestep != None):
                 time.sleep(float(eval(args.timestep)))
             else:
