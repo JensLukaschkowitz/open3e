@@ -134,24 +134,28 @@ class O3Eclass():
     # 'global' methods
     #++++++++++++++++++++++++++++++
 
-    def readByDid(self, did:int, raw:bool):
+    def readByDid(self, did:int, raw:bool, retry:int = 4):
         if(did in self.dataIdentifiers): 
             retry = 0
-            while(True):
-                try:
-                    Open3Ecodecs.flag_rawmode = raw
-                    response = self.uds_client.read_data_by_identifier([did])
-                    # return value and idstr
-                    return response.service_data.values[did],self.dataIdentifiers[did].id
-                except Exception as e:
-                    if(type(e) in [TimeoutError, udsoncan.exceptions.TimeoutException]):
-                        time.sleep(0.1)
-                        retry += 1
-                        if(retry == 4):
-                            print(did, "ERROR max retry")
-                            return None,self.dataIdentifiers[did].id
-                    else:
-                        raise Exception(e)
+            #while(True):
+            try:
+                Open3Ecodecs.flag_rawmode = raw
+                start_time = time.time()
+                response = self.uds_client.read_data_by_identifier([did])
+                # return value and idstr
+                end_time = time.time()
+                print(f"[udsoncan:read_data_by_identifier] total time: {end_time-start_time}")
+                return response.service_data.values[did],self.dataIdentifiers[did].id
+            except Exception as e:
+                if(type(e) in [TimeoutError, udsoncan.exceptions.TimeoutException]):
+                    time.sleep(0.1)
+                    #retry += 1
+                    readByDid(self, did, raw, retr-=1)
+                    if(retry == 4):
+                        print(did, "ERROR max retry")
+                        return None,self.dataIdentifiers[did].id
+                else:
+                    raise Exception(e)
         else:
             return self.readPure(did)
 
