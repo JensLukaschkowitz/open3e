@@ -150,8 +150,8 @@ class O3Eclass():
                 if(type(e) in [TimeoutError, udsoncan.exceptions.TimeoutException]):
                     time.sleep(0.1)
                     #retry += 1
-                    readByDid(self, did, raw, retry-=1)
-                    if(retry == 4):
+                    readByDid(self, did, raw, retry-1)
+                    if(retry == 0):
                         print(did, "ERROR max retry")
                         return None,self.dataIdentifiers[did].id
                 else:
