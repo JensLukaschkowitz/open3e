@@ -365,7 +365,8 @@ try:
 #                 time.sleep(0.02)
                 end_time = time.time()
                 step_time = end_time - start_time
-                print("Time of {ecudid}: {step_time} seconds")
+                start_time = end_time # reset the start_time for the next loop iteration
+                print(f"Time of {ecudid}: {step_time} seconds")
             if(args.timestep != None):
                 time.sleep(float(eval(args.timestep)))
             else:
